@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>GIWA Deposit Bridge — Sepolia → GIWA Sepolia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      :root{
+        --bg:#f4f4ec; --surface:#ffffff; --surface-2:#edf2ea; --ink:#12211a; --ink-2:#54665b;
+        --line:#dde4d8; --accent:#0e9f6e; --accent-strong:#0b8a5f; --accent-text:#0a7350;
+        --accent-ink:#ffffff; --accent-soft:#dcf4e7;
+        --amber:#9a6206; --amber-soft:#f7e8c8; --red:#b3261e; --red-soft:#f9dedb;
+        --hero-1:#0e3a2a; --hero-2:#071f16; --hero-ink:#f2f8f3; --hero-ink-2:#b9d2c2;
+        --mono:'IBM Plex Mono',ui-monospace,monospace;
+        --sans:'Manrope',system-ui,-apple-system,sans-serif; --display:'Sora','Manrope',system-ui,sans-serif;
+        --radius:14px;
+        --shadow:0 1px 2px rgba(18,33,26,.05),0 16px 36px -20px rgba(18,33,26,.22);
+        --shadow-lg:0 2px 4px rgba(18,33,26,.06),0 28px 56px -24px rgba(10,60,40,.35);
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#080d0a; --surface:#10160f; --surface-2:#1a231b; --ink:#eaf3ec; --ink-2:#9db3a4;
+          --line:#263228; --accent:#2fd68f; --accent-strong:#25b978; --accent-text:#2fd68f;
+          --accent-ink:#04241a; --accent-soft:#123527;
+          --amber:#e0a83e; --amber-soft:#3a2f14; --red:#f08a84; --red-soft:#3d1d1a;
+          --hero-1:#0d3524; --hero-2:#051711; --hero-ink:#f2f8f3; --hero-ink-2:#a9c8b4;
+          --shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.6);
+          --shadow-lg:0 2px 4px rgba(0,0,0,.4),0 28px 56px -24px rgba(0,0,0,.7);
+        }
+      }
+      *{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%}
+      body{margin:0;color:var(--ink);font-family:var(--sans);line-height:1.55;font-size:16px;
+        background:radial-gradient(1100px 480px at 85% -80px,rgba(20,180,120,.10),transparent 60%),var(--bg)}
+      a{color:var(--accent-text);text-underline-offset:2px}
+      .wrap{max-width:1120px;margin:0 auto;padding:22px 16px 56px}
+      /* Header / hero */
+      header{position:relative;overflow:hidden;border-radius:26px;padding:clamp(26px,5vw,46px);
+        background:linear-gradient(135deg,var(--hero-1) 0%,var(--hero-2) 78%);color:var(--hero-ink);box-shadow:var(--shadow-lg)}
+      header::after{content:"GIWA";position:absolute;right:-6px;bottom:-42px;font-family:var(--display);font-weight:800;
+        font-size:clamp(6rem,17vw,10.5rem);line-height:1;letter-spacing:-.02em;color:transparent;
+        -webkit-text-stroke:1.5px rgba(255,255,255,.08);pointer-events:none;user-select:none}
+      header>*{position:relative;z-index:1}
+      .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;
+        text-transform:uppercase;color:#7debb9;font-weight:600;margin:0 0 16px;
+        background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:6px 13px}
+      .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:#2fd68f;box-shadow:0 0 0 3px rgba(47,214,143,.25)}
+      h1{font-family:var(--display);font-weight:800;font-size:clamp(2.3rem,6.5vw,3.6rem);line-height:1.02;margin:0 0 12px;letter-spacing:-.02em;color:var(--hero-ink)}
+      h1 .hl{color:#2fd68f}
+      .lede{font-size:1.08rem;color:var(--hero-ink-2);max-width:62ch;margin:0 0 6px}
+      .lede strong{color:var(--hero-ink)}
+      .route{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px 0 2px}
+      .route .node{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);color:var(--hero-ink);
+        border-radius:999px;padding:9px 17px;font-weight:700;font-size:.95rem;display:inline-flex;gap:9px;align-items:center;backdrop-filter:blur(4px)}
+      .route .node::before{content:"";width:8px;height:8px;border-radius:50%;background:#2fd68f;flex:none}
+      .route .node small{font-family:var(--mono);font-weight:500;color:var(--hero-ink-2);font-size:.78rem}
+      .route .arrow{font-family:var(--mono);color:#071f16;background:#2fd68f;border-radius:999px;font-weight:700;
+        font-size:1.05rem;line-height:1;padding:7px 13px;animation:nudge 2.2s ease-in-out infinite}
+      @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+      .route .eta{background:rgba(47,214,143,.16);color:#7debb9;border:1px solid rgba(47,214,143,.35);border-radius:999px;padding:9px 15px;font-size:.88rem;font-weight:700}
+      /* Live strip */
+      .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0 20px}
+      .stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:13px 15px;box-shadow:var(--shadow)}
+      .stat .k{font-size:.73rem;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-2);font-weight:700}
+      .stat .v{font-family:var(--mono);font-size:1.15rem;font-weight:600;margin-top:3px;word-break:break-all}
+      .stat .s{font-size:.8rem;color:var(--ink-2)}
+      .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:1px;box-shadow:0 0 0 3px var(--accent-soft)}
+      .dot.bad{background:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+      /* Layout */
+      .grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:6px}
+      @media(min-width:920px){.grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}}
+      .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}
+      .grid>.card{box-shadow:var(--shadow-lg)}
+      .card h2{font-family:var(--display);font-size:1.28rem;margin:0 0 5px;font-weight:700;letter-spacing:-.01em}
+      .card h3{font-family:var(--display);font-size:1.02rem;margin:22px 0 8px;font-weight:700}
+      .card h3:first-of-type{margin-top:4px}
+      .sub{color:var(--ink-2);font-size:.92rem;margin:0 0 14px}
+      label.flabel{display:block;font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2);margin:18px 0 7px}
+      label.flabel:first-child{margin-top:0}
+      input[type=text],input[type=number]{width:100%;background:var(--surface-2);border:1.5px solid transparent;border-radius:12px;padding:11px 13px;font-family:var(--mono);font-size:1rem;color:var(--ink);transition:border-color .15s,background .15s}
+      input::placeholder{color:var(--ink-2);opacity:.75}
+      input:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 4px var(--accent-soft)}
+      .amountrow{display:flex;gap:8px;align-items:stretch}
+      .amountrow input{flex:1;min-width:0;font-size:1.45rem;font-weight:600;padding:13px 15px;border-radius:14px}
+      .amountrow .unit{display:flex;align-items:center;font-family:var(--mono);font-weight:600;color:var(--accent-text);background:var(--accent-soft);border-radius:12px;padding:0 16px}
+      .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+      .chip{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 15px;font-family:var(--mono);font-size:.85rem;font-weight:500;cursor:pointer;min-height:2.25rem;transition:all .15s}
+      .chip:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-text);transform:translateY(-1px)}
+      .balrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+      .bal{flex:1;min-width:150px;background:var(--surface-2);border-radius:14px;padding:13px 15px}
+      .bal .k{font-size:.73rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2)}
+      .bal .v{font-family:var(--mono);font-size:1.25rem;font-weight:600;margin-top:3px}
+      .bal .v small{font-size:.8rem;color:var(--ink-2);font-weight:500}
+      .btn{appearance:none;border:0;border-radius:13px;padding:12px 20px;font-family:var(--sans);font-size:1rem;font-weight:800;cursor:pointer;min-height:3rem;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:transform .15s,box-shadow .15s,opacity .15s}
+      .btn.primary{background:linear-gradient(135deg,#17c07f,#0b8a5f);color:#fff;width:100%;margin-top:22px;font-size:1.06rem;padding:15px 20px;border-radius:15px;box-shadow:0 14px 28px -12px rgba(11,138,95,.55)}
+      .btn.primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 20px 34px -12px rgba(11,138,95,.6)}
+      .btn.primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+      @media (prefers-color-scheme: dark){.btn.primary{background:linear-gradient(135deg,#2fd68f,#17a86e);color:#04241a}}
+      .btn.ghost{background:transparent;color:var(--accent-text);border:1.5px solid var(--accent)}
+      .btn.ghost:hover{background:var(--accent-soft)}
+      .btn.small{padding:8px 15px;font-size:.88rem;min-height:2.5rem;border-radius:11px}
+      .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+      .walletbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:#eaf5ef;border-radius:18px;padding:15px 17px;margin-bottom:18px;
+        background:linear-gradient(120deg,var(--hero-1),var(--hero-2));box-shadow:var(--shadow)}
+      .walletbar .addr{font-family:var(--mono);font-size:.9rem;word-break:break-all;color:#cfe6d8}
+      .walletbar .net{font-size:.82rem;background:rgba(255,255,255,.14);border-radius:999px;padding:4px 11px;font-family:var(--mono)}
+      .walletbar .spacer{flex:1}
+      .walletbar .btn{background:#2fd68f;color:#04241a}
+      .walletbar .btn:hover{background:#7debb9}
+      .notice{border-radius:13px;padding:13px 15px;font-size:.92rem;margin-top:14px;border:1px solid transparent}
+      .notice.amber{background:var(--amber-soft);color:var(--ink);border-color:var(--amber)}
+      .notice.red{background:var(--red-soft);color:var(--ink);border-color:var(--red)}
+      .notice.green{background:var(--accent-soft);color:var(--ink);border-color:var(--accent)}
+      .notice strong{font-weight:800}
+      .steps{list-style:none;margin:18px 0 0;padding:0}
+      .steps li{display:flex;gap:12px;padding:11px 0;border-top:1px dashed var(--line)}
+      .steps li:first-child{border-top:0}
+      .steps .n{flex:none;width:29px;height:29px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.82rem;font-weight:600;color:var(--ink-2);transition:all .2s}
+      .steps li.active .n{border-color:var(--accent);color:var(--accent-text);background:var(--accent-soft)}
+      .steps li.done .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+      .steps .t{font-weight:700}
+      .steps .d{font-size:.88rem;color:var(--ink-2)}
+      .steps .st{margin-left:auto;font-family:var(--mono);font-size:.78rem;color:var(--ink-2);text-align:right;flex:none;padding-top:4px}
+      .log{list-style:none;margin:0;padding:0}
+      .log li{border-top:1px solid var(--line);padding:12px 0}
+      .log li:first-child{border-top:0;padding-top:2px}
+      .log .amt{font-family:var(--mono);font-weight:600}
+      .log .hash{font-family:var(--mono);font-size:.8rem;word-break:break-all}
+      .badge{display:inline-block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;border-radius:999px;padding:3px 10px;margin-left:8px;vertical-align:2px}
+      .badge.pending{background:var(--amber-soft);color:var(--amber)}
+      .badge.ok{background:var(--accent-soft);color:var(--accent-text)}
+      .badge.fail{background:var(--red-soft);color:var(--red)}
+      .empty{color:var(--ink-2);font-size:.92rem;padding:10px 0}
+      .contracts{display:grid;grid-template-columns:1fr;gap:11px}
+      @media(min-width:700px){.contracts{grid-template-columns:1fr 1fr}}
+      .contract{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--surface);box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+      .contract:hover{border-color:var(--accent);transform:translateY(-2px)}
+      .contract .name{font-weight:800;font-size:.95rem}
+      .contract .role{font-size:.82rem;color:var(--ink-2)}
+      .contract .addr{font-family:var(--mono);font-size:.78rem;word-break:break-all;margin-top:7px}
+      .contract .row{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+      .mini{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;padding:5px 13px;font-size:.8rem;font-weight:700;cursor:pointer;min-height:2rem;text-decoration:none;display:inline-flex;align-items:center;transition:all .15s}
+      .mini:hover{border-color:var(--accent);color:var(--accent-text);background:var(--accent-soft)}
+      .how{display:grid;grid-template-columns:1fr;gap:12px}
+      @media(min-width:760px){.how{grid-template-columns:repeat(3,1fr)}}
+      .how .step{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);transition:transform .15s,border-color .15s}
+      .how .step:hover{transform:translateY(-3px);border-color:var(--accent)}
+      .how .step .big{font-family:var(--display);font-size:1.15rem;font-weight:800;color:var(--accent-text);line-height:1;
+        background:var(--accent-soft);width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+      .how .step h3{font-family:var(--display);margin:13px 0 6px;font-size:1rem}
+      .how .step p{margin:0;font-size:.9rem;color:var(--ink-2)}
+      section.block{margin-top:38px}
+      section.block>h2{font-family:var(--display);font-size:1.6rem;font-weight:800;letter-spacing:-.015em;margin:0 0 6px;display:flex;align-items:center;gap:12px}
+      section.block>h2::before{content:"";width:10px;height:26px;border-radius:4px;background:linear-gradient(180deg,#17c07f,#0b8a5f);flex:none}
+      section.block>.sub{margin-bottom:16px}
+      .faq details{border-top:1px solid var(--line);padding:6px 0}
+      .faq details:last-child{border-bottom:1px solid var(--line)}
+      .faq summary{cursor:pointer;font-weight:700;padding:9px 0;min-height:2.25rem;list-style:none;display:flex;align-items:center;gap:10px}
+      .faq summary::-webkit-details-marker{display:none}
+      .faq summary::after{content:"+";margin-left:auto;font-family:var(--mono);font-size:1.25rem;font-weight:600;color:var(--accent-text);line-height:1}
+      .faq details[open ] summary::after{content:"–"}
+      .faq summary:hover{color:var(--accent-text)}
+      .faq p{margin:0 0 12px;color:var(--ink-2);font-size:.94rem;max-width:70ch}
+      .mono{font-family:var(--mono)}
+      .small{font-size:.85rem;color:var(--ink-2)}
+      footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;font-size:.85rem;color:var(--ink-2)}
+      footer a{color:var(--ink-2)}
+      .hidden{display:none!important}
+      .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+      @keyframes sp{to{transform:rotate(360deg)}}
+      @media (prefers-reduced-motion: reduce){.spin{animation:none}.route .arrow{animation:none}}
+      /* Live transaction progress */
+      .tx-progress{margin-top:18px;border:1.5px solid var(--accent);border-radius:16px;padding:17px;background:var(--accent-soft)}
+      .tx-progress.is-failed{border-color:var(--red);background:var(--red-soft)}
+      .tx-progress-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+      .tx-pulse{flex:none;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(20,180,120,.35);animation:txpulse 1.6s ease-out infinite}
+      .tx-progress.is-done .tx-pulse{background:var(--accent);animation:none;box-shadow:none}
+      .tx-progress.is-failed .tx-pulse{background:var(--red);animation:none;box-shadow:none}
+      @keyframes txpulse{0%{box-shadow:0 0 0 0 rgba(20,180,120,.35)}70%{box-shadow:0 0 0 9px rgba(20,180,120,0)}100%{box-shadow:0 0 0 0 rgba(20,180,120,0)}}
+      .tx-progress-title{font-weight:800;font-size:.98rem}
+      .tx-progress-meta{margin-left:auto;display:flex;gap:10px;align-items:baseline;font-family:var(--mono)}
+      .tx-progress-pct{font-size:1.1rem;font-weight:600;color:var(--accent-text)}
+      .tx-progress.is-failed .tx-progress-pct{color:var(--red)}
+      .tx-progress-elapsed{font-size:.8rem;color:var(--ink-2)}
+      .tx-track{margin-top:12px;height:14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);overflow:hidden;position:relative}
+      .tx-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#17c07f,#2fd68f);transition:width .7s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden}
+      .tx-progress.is-failed .tx-fill{background:var(--red)}
+      .tx-fill::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.25) 0 10px,transparent 10px 20px);animation:txstripes 1s linear infinite}
+      .tx-progress.is-done .tx-fill::after,.tx-progress.is-failed .tx-fill::after{animation:none;background:none}
+      @keyframes txstripes{to{transform:translateX(28px)}}
+      .tx-progress-detail{margin-top:10px;font-size:.92rem;color:var(--ink)}
+      .tx-progress-detail .subline{display:block;margin-top:2px;font-size:.84rem;color:var(--ink-2)}
+      .tx-progress-detail a{font-family:var(--mono);font-size:.82rem;word-break:break-all}
+      .tx-stages{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:13px}
+      .tx-stage{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);text-align:center;padding-top:9px;border-top:3px solid var(--line)}
+      .tx-stage.active{color:var(--accent-text);border-top-color:var(--accent)}
+      .tx-stage.done{color:var(--ink);border-top-color:var(--accent)}
+      .tx-stage.failed{color:var(--red);border-top-color:var(--red)}
+      @media(max-width:520px){.tx-stages{grid-template-columns:repeat(2,1fr)}}
+      @media (prefers-reduced-motion: reduce){.tx-pulse{animation:none}.tx-fill{transition:none}.tx-fill::after{animation:none}}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <p class="eyebrow">Deposit-only bridge · Testnet</p>
+        <h1>Deposit ETH to <span class="hl">GIWA</span></h1>
+        <p class="lede">One direction, done simply: move ETH from <strong>Ethereum Sepolia</strong> to <strong>GIWA Sepolia</strong> through the official OptimismPortal contract. Your wallet signs everything — no private keys, no custody, no middleman.</p>
+        <div class="route" aria-label="Bridge route">
+          <span class="node">Ethereum Sepolia <small>11155111</small></span>
+          <span class="arrow" aria-hidden="true">→</span>
+          <span class="node">GIWA Sepolia <small>91342</small></span>
+          <span class="eta">Arrives in ~1–3 minutes</span>
+        </div>
+      </header>
+
+      <div class="strip" role="status" aria-label="Live chain status">
+        <div class="stat"><div class="k"><span class="dot" id="dotL1"></span>Sepolia block</div><div class="v" id="blockL1">—</div><div class="s">Layer 1</div></div>
+        <div class="stat"><div class="k"><span class="dot" id="dotL2"></span>GIWA block</div><div class="v" id="blockL2">—</div><div class="s">Layer 2 · 1s blocks</div></div>
+        <div class="stat"><div class="k">Deposit contract</div><div class="v" style="font-size:.82rem">0x9569…C78A</div><div class="s">OptimismPortal on Sepolia</div></div>
+        <div class="stat"><div class="k">Last checked</div><div class="v" id="lastCheck" style="font-size:.95rem">—</div><div class="s"><a href="#" id="refreshLink">Refresh now</a></div></div>
+      </div>
+
+      <div class="walletbar" id="walletBar">
+        <div>
+          <div style="font-weight:700">Wallet</div>
+          <div class="addr" id="walletAddr">Not connected</div>
+        </div>
+        <span class="net hidden" id="walletNet"></span>
+        <span class="spacer"></span>
+        <button class="btn small" id="connectBtn" type="button">Connect wallet</button>
+        <button class="btn small hidden" id="addGiwaBtn" type="button">Add GIWA to wallet</button>
+      </div>
+
+      <div class="grid">
+        <!-- Deposit card -->
+        <div class="card">
+          <h2>Make a deposit</h2>
+          <p class="sub">ETH is locked in the OptimismPortal on Sepolia and the same amount is minted to your address on GIWA Sepolia — the OP Stack lock-and-mint flow from GIWA's official bridging guide.</p>
+
+          <div class="balrow">
+            <div class="bal"><div class="k">Sepolia balance</div><div class="v" id="balL1">— <small>ETH</small></div></div>
+            <div class="bal"><div class="k">GIWA balance</div><div class="v" id="balL2">— <small>ETH</small></div></div>
+          </div>
+
+          <label class="flabel" for="amount">Amount to deposit</label>
+          <div class="amountrow">
+            <input type="text" inputmode="decimal" id="amount" placeholder="0.001" value="0.001" autocomplete="off" />
+            <span class="unit">ETH</span>
+          </div>
+          <div class="chips" aria-label="Quick amounts">
+            <button class="chip" type="button" data-amt="0.001">0.001</button>
+            <button class="chip" type="button" data-amt="0.01">0.01</button>
+            <button class="chip" type="button" data-amt="0.05">0.05</button>
+            <button class="chip" type="button" data-pct="25">25%</button>
+            <button class="chip" type="button" data-pct="50">50%</button>
+            <button class="chip" type="button" data-pct="max">Max − gas</button>
+          </div>
+          <p class="small" id="amountHint">The guide's test amount is 0.001 ETH. Keep some Sepolia ETH back for the L1 gas fee.</p>
+
+          <label class="flabel" for="recipient">Recipient on GIWA</label>
+          <input type="text" id="recipient" placeholder="0x… (defaults to your wallet)" autocomplete="off" spellcheck="false" />
+          <p class="small">Leave blank to receive at the same address. Deposits to a different address are one-way — double-check it.</p>
+
+          <button class="btn primary" id="depositBtn" type="button" disabled>Connect wallet to deposit</button>
+
+          <div class="tx-progress hidden" id="txProgress" role="status" aria-live="polite" aria-label="Live transaction status">
+            <div class="tx-progress-head">
+              <span class="tx-pulse" aria-hidden="true"></span>
+              <span class="tx-progress-title" id="txProgressTitle">Transaction in progress</span>
+              <span class="tx-progress-meta"><span class="tx-progress-elapsed" id="txElapsed">0:00</span><span class="tx-progress-pct" id="txPct">0%</span></span>
+            </div>
+            <div class="tx-track" role="progressbar" id="txBar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Deposit progress">
+              <div class="tx-fill" id="txFill"></div>
+            </div>
+            <div class="tx-progress-detail" id="txDetail">Preparing your deposit…</div>
+            <div class="tx-stages" aria-hidden="true">
+              <div class="tx-stage" data-txstage="1">1 · Wallet</div>
+              <div class="tx-stage" data-txstage="2">2 · L1 confirm</div>
+              <div class="tx-stage" data-txstage="3">3 · Relay to GIWA</div>
+              <div class="tx-stage" data-txstage="4">4 · Arrived</div>
+            </div>
+          </div>
+
+          <div class="notice amber hidden" id="warnBox"></div>
+          <div class="notice red hidden" id="errBox"></div>
+          <div class="notice green hidden" id="okBox"></div>
+
+          <ol class="steps" id="steps">
+            <li data-step="1"><span class="n">1</span><div><div class="t">Send on Sepolia</div><div class="d">Your wallet calls <span class="mono">depositTransaction</span> on the OptimismPortal.</div></div><span class="st" data-st></span></li>
+            <li data-step="2"><span class="n">2</span><div><div class="t">Sequencer picks it up</div><div class="d">GIWA waits ~4–5 L1 blocks (about a minute) against reorgs, then creates the L2 deposit.</div></div><span class="st" data-st></span></li>
+            <li data-step="3"><span class="n">3</span><div><div class="t">ETH lands on GIWA</div><div class="d">This page watches your GIWA balance and confirms when the deposit arrives.</div></div><span class="st" data-st></span></li>
+          </ol>
+        </div>
+
+        <!-- Side column -->
+        <div>
+          <div class="card">
+            <h2>Check a deposit</h2>
+            <p class="sub">Paste a Sepolia transaction hash to see its on-chain status.</p>
+            <label class="flabel" for="checkHash">Sepolia tx hash</label>
+            <input type="text" id="checkHash" placeholder="0x…" autocomplete="off" spellcheck="false" />
+            <div class="btnrow">
+              <button class="btn ghost small" id="checkBtn" type="button">Check status</button>
+            </div>
+            <div id="checkResult" class="small" style="margin-top:12px"></div>
+          </div>
+
+          <div class="card" style="margin-top:18px">
+            <h2>Your deposits this session</h2>
+            <p class="sub">Tracked here while the page is open. Reloading clears the list — your deposits stay on-chain either way.</p>
+            <ul class="log" id="depositLog"><li class="empty" id="logEmpty">No deposits yet this session.</li></ul>
+          </div>
+
+          <div class="card" style="margin-top:18px">
+            <h3>Need Sepolia ETH?</h3>
+            <p class="sub" style="margin-bottom:10px">GIWA's guide points to Google's Sepolia faucet. You'll also want the GIWA network in your wallet before the deposit lands.</p>
+            <div class="btnrow" style="margin-top:0">
+              <a class="btn ghost small" href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" target="_blank" rel="noopener">Sepolia faucet ↗</a>
+              <button class="btn ghost small" id="addGiwaBtn2" type="button">Add GIWA Sepolia</button>
+              <button class="btn ghost small" id="switchSepoliaBtn" type="button">Switch to Sepolia</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="block">
+        <h2>How a deposit works</h2>
+        <p class="sub">GIWA is an OP Stack chain, so deposits use the standard OptimismPortal flow — the same one in the official guide.</p>
+        <div class="how">
+          <div class="step"><div class="big">01</div><h3>Lock on L1</h3><p>Your ETH is sent to the OptimismPortal contract on Ethereum Sepolia (<span class="mono">0x9569…C78A</span>), which emits a <span class="mono">TransactionDeposited</span> event.</p></div>
+          <div class="step"><div class="big">02</div><h3>Sequencer relays it</h3><p>GIWA's sequencer reads the L1 event, waits ~4–5 blocks so a reorg can't undo it, and derives the matching deposit transaction on L2.</p></div>
+          <div class="step"><div class="big">03</div><h3>Mint on L2</h3><p>The same amount of ETH is credited to your GIWA Sepolia address. Total time is typically 1–3 minutes. No challenge period — that's withdrawals, which this tool doesn't do.</p></div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Networks &amp; contracts</h2>
+        <p class="sub">All addresses are from GIWA's official contract list. Verify before you sign — the portal address in your wallet prompt must match the one below.</p>
+        <div class="contracts">
+          <div class="contract">
+            <div class="name">OptimismPortal <span class="badge ok" style="margin-left:6px">Deposit goes here</span></div>
+            <div class="role">L1 · Ethereum Sepolia — receives every deposit on this page</div>
+            <div class="addr">0x956962C34687A954e611A83619ABaA37Ce6bC78A</div>
+            <div class="row"><button class="mini" type="button" data-copy="0x956962C34687A954e611A83619ABaA37Ce6bC78A">Copy</button><a class="mini" href="https://sepolia.etherscan.io/address/0x956962C34687A954e611A83619ABaA37Ce6bC78A" target="_blank" rel="noopener">Etherscan ↗</a></div>
+          </div>
+          <div class="contract">
+            <div class="name">L1StandardBridge</div>
+            <div class="role">L1 · Ethereum Sepolia — the higher-level bridge the portal sits under</div>
+            <div class="addr">0x77b2ffc0F57598cAe1DB76cb398059cF5d10A7E7</div>
+            <div class="row"><button class="mini" type="button" data-copy="0x77b2ffc0F57598cAe1DB76cb398059cF5d10A7E7">Copy</button><a class="mini" href="https://sepolia.etherscan.io/address/0x77b2ffc0F57598cAe1DB76cb398059cF5d10A7E7" target="_blank" rel="noopener">Etherscan ↗</a></div>
+          </div>
+          <div class="contract">
+            <div class="name">L1CrossDomainMessenger</div>
+            <div class="role">L1 · Ethereum Sepolia — L1↔L2 messaging</div>
+            <div class="addr">0x23ce19ED800fbbC964B9350b01B9113a8508D3F1</div>
+            <div class="row"><button class="mini" type="button" data-copy="0x23ce19ED800fbbC964B9350b01B9113a8508D3F1">Copy</button><a class="mini" href="https://sepolia.etherscan.io/address/0x23ce19ED800fbbC964B9350b01B9113a8508D3F1" target="_blank" rel="noopener">Etherscan ↗</a></div>
+          </div>
+          <div class="contract">
+            <div class="name">L2StandardBridge</div>
+            <div class="role">L2 · GIWA Sepolia — predeploy on the GIWA side</div>
+            <div class="addr">0x4200000000000000000000000000000000000010</div>
+            <div class="row"><button class="mini" type="button" data-copy="0x4200000000000000000000000000000000000010">Copy</button><a class="mini" href="https://sepolia-explorer.giwa.io/address/0x4200000000000000000000000000000000000010" target="_blank" rel="noopener">GIWA explorer ↗</a></div>
+          </div>
+          <div class="contract">
+            <div class="name">Ethereum Sepolia</div>
+            <div class="role">Layer 1 network</div>
+            <div class="addr">Chain ID 11155111 · RPC ethereum-sepolia-rpc.publicnode.com</div>
+            <div class="row"><a class="mini" href="https://sepolia.etherscan.io" target="_blank" rel="noopener">Etherscan ↗</a></div>
+          </div>
+          <div class="contract">
+            <div class="name">GIWA Sepolia</div>
+            <div class="role">Layer 2 network · GIWA mainnet is still under development</div>
+            <div class="addr">Chain ID 91342 · RPC sepolia-rpc.giwa.io</div>
+            <div class="row"><a class="mini" href="https://sepolia-explorer.giwa.io" target="_blank" rel="noopener">GIWA explorer ↗</a><button class="mini" type="button" id="addGiwaBtn3">Add to wallet</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block faq">
+        <h2>Good to know</h2>
+        <details>
+          <summary>How long does a deposit take?</summary>
+          <p>About 1–3 minutes. The L1 transaction confirms in ~12 seconds, then GIWA's sequencer waits roughly 4–5 L1 blocks before processing the deposit, as a safeguard against L1 reorgs.</p>
+        </details>
+        <details>
+          <summary>Why deposits only?</summary>
+          <p>Deposits are the fast, simple direction — one transaction, a few minutes. Withdrawals back to Sepolia are a three-step process (initiate, prove, finalize) with a ~7-day challenge period. For withdrawals, use the full official bridge linked from GIWA's docs. This tool stays focused on getting ETH onto GIWA.</p>
+        </details>
+        <details>
+          <summary>Is there an official bridge?</summary>
+          <p>Yes — GIWA's documentation describes the canonical bridge contracts, and a full two-way bridge UI is linked from the official docs. This page is an independent, deposit-only front-end over those same contracts: simpler if all you need is Sepolia → GIWA.</p>
+        </details>
+        <details>
+          <summary>What does it cost?</summary>
+          <p>Only the Sepolia gas for one L1 transaction, plus the ETH you deposit. The deposit itself sets a 200,000 L2 gas limit, which is covered by the deposit — you don't pay L2 gas separately. Testnet ETH has no monetary value.</p>
+        </details>
+        <details>
+          <summary>Is this mainnet?</summary>
+          <p>No. GIWA mainnet is under development, so this bridge works on testnet only: Ethereum Sepolia → GIWA Sepolia. Never send mainnet ETH to these contract addresses.</p>
+        </details>
+      </section>
+
+      <footer>
+        Built on the contracts and flow in GIWA's official bridging guide —
+        <a href="https://docs.giwa.io/giwa-chain/en/get-started/bridging/eth" target="_blank" rel="noopener">docs.giwa.io/giwa-chain/en/get-started/bridging/eth</a> ·
+        Contract list: <a href="https://docs.giwa.io/giwa-chain/en/network-information/contracts" target="_blank" rel="noopener">docs.giwa.io — GIWA Contracts</a>.
+        Independent tool, not affiliated with Dunamu or GIWA. Testnet only.
+      </footer>
+    </div>
+
+    <script>
+    (function(){
+      "use strict";
+      // ---- Constants (from GIWA official docs, fetched at build time) ----
+      var L1 = { chainId: 11155111, chainHex: "0xaa36a7", name: "Ethereum Sepolia",
+                 rpc: "https://ethereum-sepolia-rpc.publicnode.com",
+                 explorer: "https://sepolia.etherscan.io" };
+      var L2 = { chainId: 91342, chainHex: "0x164ce", name: "GIWA Sepolia",
+                 rpc: "https://sepolia-rpc.giwa.io",
+                 explorer: "https://sepolia-explorer.giwa.io" };
+      var PORTAL = "0x956962C34687A954e611A83619ABaA37Ce6bC78A";
+      var SELECTOR = "e9e05c42"; // depositTransaction(address,uint256,uint64,bool,bytes)
+      var L2_GAS_LIMIT = 200000n;
+      var GAS_RESERVE = 5000000000000000n; // 0.005 ETH kept back on "Max"
+
+      var state = { account: null, chainId: null, balL1: null, balL2: null, busy: false };
+      var deposits = []; // session-only log
+
+      function $(id){ return document.getElementById(id); }
+      function shortAddr(a){ return a ? a.slice(0,6) + "…" + a.slice(-4) : "—"; }
+      function isAddr(a){ return /^0x[0-9a-fA-F]{40}$/.test(a || ""); }
+      function isHash(h){ return /^0x[0-9a-fA-F]{64}$/.test(h || ""); }
+
+      // ---- BigInt ETH helpers ----
+      function parseEth(str){
+        str = (str || "").trim();
+        if(!/^\d*(\.\d*)?$/.test(str) || str === "" || str === ".") return null;
+        var parts = str.split("."), whole = parts[0] || "0", frac = (parts[1] || "");
+        if(frac.length > 18) return null;
+        frac = (frac + "000000000000000000").slice(0,18);
+        try { return BigInt(whole) * (10n**18n) + BigInt(frac || "0"); } catch(e){ return null; }
+      }
+      function fmtEth(wei, maxDp){
+        if(wei === null || wei === undefined) return "—";
+        var neg = wei < 0n; if(neg) wei = -wei;
+        var s = wei.toString().padStart(19,"0");
+        var whole = s.slice(0, s.length-18), frac = s.slice(s.length-18);
+        if(maxDp !== undefined){ frac = frac.slice(0, maxDp); }
+        frac = frac.replace(/0+$/,"");
+        return (neg?"-":"") + whole + (frac ? "." + frac : "");
+      }
+      function toHex(n){ return "0x" + n.toString(16); }
+      function pad32(hexNoPrefix){ return hexNoPrefix.padStart(64,"0"); }
+
+      // ---- JSON-RPC over public endpoints ----
+      function rpc(url, method, params){
+        return fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ jsonrpc:"2.0", id:1, method:method, params:params || [] })
+        }).then(function(r){ return r.json(); }).then(function(j){
+          if(j.error) throw new Error(j.error.message || "RPC error");
+          return j.result;
+        });
+      }
+      function getBlock(url){ return rpc(url, "eth_blockNumber", []).then(function(h){ return parseInt(h,16); }); }
+      function getBalance(url, addr){ return rpc(url, "eth_getBalance", [addr, "latest"]).then(function(h){ return BigInt(h); }); }
+
+      // ---- Live stats ----
+      function refreshStats(){
+        getBlock(L1.rpc).then(function(b){ $("blockL1").textContent = b.toLocaleString(); $("dotL1").className = "dot"; })
+          .catch(function(){ $("dotL1").className = "dot bad"; });
+        getBlock(L2.rpc).then(function(b){ $("blockL2").textContent = b.toLocaleString(); $("dotL2").className = "dot"; })
+          .catch(function(){ $("dotL2").className = "dot bad"; });
+        $("lastCheck").textContent = new Date().toLocaleTimeString();
+        if(state.account){
+          getBalance(L1.rpc, state.account).then(function(b){ state.balL1 = b; renderBalances(); }).catch(function(){});
+          getBalance(L2.rpc, state.account).then(function(b){ state.balL2 = b; renderBalances(); }).catch(function(){});
+        }
+      }
+      function renderBalances(){
+        $("balL1").innerHTML = fmtEth(state.balL1, 6) + " <small>ETH</small>";
+        $("balL2").innerHTML = fmtEth(state.balL2, 6) + " <small>ETH</small>";
+        updateDepositBtn();
+      }
+
+      // ---- Wallet ----
+      function hasWallet(){ return typeof window.ethereum !== "undefined"; }
+      function updateWalletUI(){
+        if(state.account){
+          $("walletAddr").textContent = state.account;
+          $("connectBtn").textContent = "Connected";
+          $("addGiwaBtn").classList.remove("hidden");
+          var net = $("walletNet");
+          if(state.chainId){
+            net.classList.remove("hidden");
+            net.textContent = state.chainId === L1.chainId ? "On Sepolia ✓" :
+                              state.chainId === L2.chainId ? "On GIWA — switch to Sepolia to deposit" :
+                              "Chain " + state.chainId + " — switch to Sepolia to deposit";
+          }
+          if($("recipient").placeholder.indexOf("defaults") > -1 && !$("recipient").value){
+            $("recipient").placeholder = state.account;
+          }
+        } else {
+          $("walletAddr").textContent = hasWallet() ? "Not connected" : "No wallet found — install MetaMask or another EVM wallet";
+          $("connectBtn").textContent = "Connect wallet";
+          $("addGiwaBtn").classList.add("hidden");
+          $("walletNet").classList.add("hidden");
+        }
+        updateDepositBtn();
+      }
+      function updateDepositBtn(){
+        var btn = $("depositBtn");
+        if(state.busy){ btn.disabled = true; btn.innerHTML = "<span class='spin'></span>Deposit in progress…"; return; }
+        if(!state.account){ btn.disabled = true; btn.textContent = "Connect wallet to deposit"; return; }
+        btn.disabled = false; btn.textContent = "Deposit ETH to GIWA →";
+      }
+      function connect(){
+        if(!hasWallet()){ showErr("No EVM wallet detected in this browser. Install MetaMask (or another injected wallet), then reload and connect."); return; }
+        window.ethereum.request({ method:"eth_requestAccounts" }).then(function(accs){
+          state.account = accs && accs[0] ? accs[0] : null;
+          return window.ethereum.request({ method:"eth_chainId" });
+        }).then(function(hex){
+          state.chainId = parseInt(hex,16);
+          updateWalletUI(); refreshStats();
+        }).catch(function(e){ showErr("Wallet connection was rejected or failed: " + (e.message || e)); });
+      }
+      function switchChain(hex){
+        if(!hasWallet()){ showErr("Connect a wallet first."); return Promise.reject(new Error("no wallet")); }
+        return window.ethereum.request({ method:"wallet_switchEthereumChain", params:[{ chainId: hex }] });
+      }
+      function addGiwa(){
+        if(!hasWallet()){ showErr("Connect a wallet first."); return; }
+        window.ethereum.request({ method:"wallet_addEthereumChain", params:[{
+          chainId: L2.chainHex, chainName: "GIWA Sepolia",
+          nativeCurrency: { name:"Ether", symbol:"ETH", decimals:18 },
+          rpcUrls: [L2.rpc], blockExplorerUrls: [L2.explorer]
+        }]}).then(function(){ showOk("GIWA Sepolia added to your wallet."); })
+        .catch(function(e){ showErr("Could not add GIWA network: " + (e.message || e)); });
+      }
+      if(hasWallet() && window.ethereum.on){
+        window.ethereum.on("accountsChanged", function(accs){ state.account = accs[0] || null; state.balL1 = state.balL2 = null; renderBalances(); updateWalletUI(); refreshStats(); });
+        window.ethereum.on("chainChanged", function(hex){ state.chainId = parseInt(hex,16); updateWalletUI(); refreshStats(); });
+      }
+
+      // ---- Messages ----
+      function hideMsgs(){ $("warnBox").classList.add("hidden"); $("errBox").classList.add("hidden"); $("okBox").classList.add("hidden"); }
+      function showErr(m){ hideMsgs(); var b=$("errBox"); b.innerHTML = "<strong>Something went wrong.</strong> " + m; b.classList.remove("hidden"); }
+      function showWarn(m){ var b=$("warnBox"); b.innerHTML = m; b.classList.remove("hidden"); }
+      function showOk(m){ hideMsgs(); var b=$("okBox"); b.innerHTML = m; b.classList.remove("hidden"); }
+
+      // ---- Steps UI ----
+      function setStep(n, status, note){
+        var li = document.querySelector('#steps li[data-step="'+n+'"]');
+        if(!li) return;
+        li.className = status || "";
+        var st = li.querySelector("[data-st]");
+        if(st) st.textContent = note || "";
+        if(status === "done") li.querySelector(".n").textContent = "✓";
+      }
+      function resetSteps(){
+        [1,2,3].forEach(function(n){
+          var li = document.querySelector('#steps li[data-step="'+n+'"]');
+          li.className = ""; li.querySelector(".n").textContent = n; li.querySelector("[data-st]").textContent = "";
+        });
+      }
+
+      // ---- Live transaction progress bar ----
+      var txTimer = null, txStartedAt = 0, txPctValue = 0;
+      function fmtElapsed(ms){
+        var s = Math.floor(ms/1000), m = Math.floor(s/60); s = s % 60;
+        return m + ":" + (s < 10 ? "0" : "") + s;
+      }
+      function stopTxTimer(){ if(txTimer){ clearInterval(txTimer); txTimer = null; } }
+      function setTxStages(stage, failed){
+        document.querySelectorAll("[data-txstage]").forEach(function(el){
+          var n = parseInt(el.getAttribute("data-txstage"),10);
+          el.className = "tx-stage" + (failed && n === stage ? " failed" : n < stage ? " done" : n === stage ? " active" : "");
+        });
+      }
+      function setTxProgress(pct, title, detailHtml, stage){
+        txPctValue = Math.max(txPctValue, Math.min(100, Math.round(pct)));
+        var box = $("txProgress");
+        box.classList.remove("hidden","is-done","is-failed");
+        $("txFill").style.width = txPctValue + "%";
+        $("txPct").textContent = txPctValue + "%";
+        $("txBar").setAttribute("aria-valuenow", String(txPctValue));
+        if(title) $("txProgressTitle").textContent = title;
+        if(detailHtml) $("txDetail").innerHTML = detailHtml;
+        if(stage) setTxStages(stage, false);
+      }
+      function startTxProgress(){
+        stopTxTimer(); txPctValue = 0; txStartedAt = Date.now();
+        $("txElapsed").textContent = "0:00";
+        var box = $("txProgress");
+        box.classList.remove("hidden","is-done","is-failed");
+        setTxProgress(6, "Waiting for wallet…", "Approve the deposit in your wallet to send it on Sepolia.", 1);
+        txPctValue = 6;
+        box.scrollIntoView({ block:"nearest", behavior:"smooth" });
+        txTimer = setInterval(function(){ $("txElapsed").textContent = fmtElapsed(Date.now() - txStartedAt); }, 500);
+      }
+      function completeTxProgress(detailHtml){
+        stopTxTimer();
+        txPctValue = 100;
+        $("txFill").style.width = "100%"; $("txPct").textContent = "100%";
+        $("txBar").setAttribute("aria-valuenow","100");
+        $("txProgressTitle").textContent = "Deposit complete ✓";
+        if(detailHtml) $("txDetail").innerHTML = detailHtml;
+        $("txProgress").classList.add("is-done");
+        setTxStages(5, false);
+        document.querySelectorAll("[data-txstage]").forEach(function(el){ el.className = "tx-stage done"; });
+      }
+      function failTxProgress(message){
+        stopTxTimer();
+        $("txProgressTitle").textContent = "Transaction failed";
+        $("txDetail").innerHTML = message || "The transaction did not complete. No progress was lost on-chain — check the details above and try again.";
+        $("txProgress").classList.add("is-failed");
+        // Keep the bar where it stopped so the user sees how far it got
+        var stage = 1;
+        document.querySelectorAll("[data-txstage]").forEach(function(el){ if(el.classList.contains("active")) stage = parseInt(el.getAttribute("data-txstage"),10); });
+        setTxStages(stage, true);
+      }
+
+      // ---- Deposit encoding ----
+      function encodeDeposit(to, valueWei){
+        var data = "0x" + SELECTOR
+          + pad32(to.toLowerCase().replace(/^0x/,""))
+          + pad32(valueWei.toString(16))
+          + pad32(L2_GAS_LIMIT.toString(16))
+          + pad32("0")
+          + pad32("a0")
+          + pad32("0");
+        return data;
+      }
+
+      // ---- Deposit flow ----
+      function doDeposit(){
+        hideMsgs(); resetSteps();
+        if(!state.account){ connect(); return; }
+        var amountWei = parseEth($("amount").value);
+        if(amountWei === null || amountWei <= 0n){ showErr("Enter a valid amount greater than 0, with at most 18 decimal places."); return; }
+        var recipient = $("recipient").value.trim() || state.account;
+        if(!isAddr(recipient)){ showErr("The recipient is not a valid Ethereum address."); return; }
+        if(state.balL1 !== null && amountWei > state.balL1){ showErr("Amount is more than your Sepolia balance (" + fmtEth(state.balL1,6) + " ETH)."); return; }
+        if(state.balL1 !== null && amountWei > state.balL1 - GAS_RESERVE){
+          showWarn("<strong>Heads up:</strong> this leaves less than 0.005 ETH for the Sepolia gas fee. The transaction may fail — consider depositing a little less.");
+        }
+        state.busy = true; updateDepositBtn();
+        setStep(1, "active", "waiting for wallet…");
+        startTxProgress();
+
+        var startL2Balance = state.balL2;
+        var currentHash = null;
+        var ensure = state.chainId === L1.chainId ? Promise.resolve() :
+          switchChain(L1.chainHex).catch(function(){ throw new Error("Please switch your wallet to Ethereum Sepolia (chain 11155111) and try again."); });
+
+        ensure.then(function(){
+          state.chainId = L1.chainId; updateWalletUI();
+          setTxProgress(14, "Confirm in your wallet…", "Your wallet is sending <strong>" + fmtEth(amountWei, 6) + " ETH</strong> to the OptimismPortal on Sepolia.", 1);
+          var tx = { from: state.account, to: PORTAL, value: toHex(amountWei), data: encodeDeposit(recipient, amountWei) };
+          return window.ethereum.request({ method:"eth_sendTransaction", params:[tx] });
+        }).then(function(hash){
+          currentHash = hash;
+          setStep(1, "active", "sent — confirming…");
+          setTxProgress(28, "Sent — confirming on Sepolia…", "Transaction broadcast. Waiting for it to be included in an L1 block.<span class='subline'>Tx <a href='" + L1.explorer + "/tx/" + hash + "' target='_blank' rel='noopener'>" + hash + "</a></span>", 2);
+          var entry = { hash: hash, amount: amountWei, recipient: recipient, status: "pending", l2Done:false };
+          deposits.unshift(entry); renderLog();
+          showOk("<strong>Deposit sent.</strong> L1 tx <a href='" + L1.explorer + "/tx/" + hash + "' target='_blank' rel='noopener'>" + shortHash(hash) + "</a> — waiting for confirmation, then for the ETH to land on GIWA (about 1–3 minutes total).");
+          var receiptChecks = 0;
+          return waitReceipt(L1.rpc, hash, 60, function(){
+            receiptChecks++;
+            // Creep 28% → 52% while waiting for the L1 receipt
+            setTxProgress(Math.min(52, 28 + receiptChecks * 2), "Sent — confirming on Sepolia…", "Still waiting for L1 confirmation — checking again every few seconds.<span class='subline'>Tx <a href='" + L1.explorer + "/tx/" + hash + "' target='_blank' rel='noopener'>" + hash + "</a></span>", 2);
+          }).then(function(receipt){
+            if(!receipt || receipt.status !== "0x1"){ entry.status = "failed"; renderLog(); throw new Error("The L1 deposit transaction did not succeed. Check it on Etherscan before retrying."); }
+            entry.status = "confirmed"; renderLog();
+            var blk = parseInt(receipt.blockNumber,16).toLocaleString();
+            setStep(1, "done", "confirmed · block " + blk);
+            setStep(2, "active", "sequencer relaying…");
+            setStep(3, "active", "watching GIWA balance…");
+            setTxProgress(58, "Confirmed on Sepolia — relaying to GIWA…", "Locked in L1 block " + blk + ". GIWA's sequencer waits ~4–5 blocks, then mints the ETH on GIWA. This page is watching the recipient's GIWA balance live.<span class='subline'>Tx <a href='" + L1.explorer + "/tx/" + hash + "' target='_blank' rel='noopener'>" + hash + "</a></span>", 3);
+            // Poll GIWA balance for arrival (recipient may differ from sender)
+            return pollArrival(recipient, startL2Balance, amountWei, entry, function(attempt){
+              // Creep 58% → 92% while waiting for arrival
+              setTxProgress(Math.min(92, 58 + attempt * 1), "Confirmed on Sepolia — relaying to GIWA…", "Sequencer relay in progress — checking the GIWA balance every 5 seconds (check #" + attempt + "). Usually lands within 1–3 minutes of the L1 confirmation.<span class='subline'>Recipient " + shortAddr(recipient) + " on GIWA · Tx <a href='" + L1.explorer + "/tx/" + hash + "' target='_blank' rel='noopener'>" + shortHash(hash) + "</a></span>", 3);
+            }).then(function(arrived){
+              return { arrived: arrived, entry: entry, hash: hash };
+            });
+          });
+        }).then(function(result){
+          setStep(2, "done", "relayed");
+          if(result && result.arrived){
+            setStep(3, "done", "arrived on GIWA ✓");
+            completeTxProgress("<strong>" + fmtEth(amountWei, 6) + " ETH arrived on GIWA</strong> at " + shortAddr(recipient) + ".<span class='subline'>L1 tx <a href='" + L1.explorer + "/tx/" + result.hash + "' target='_blank' rel='noopener'>" + result.hash + "</a> · <a href='" + L2.explorer + "/address/" + recipient + "' target='_blank' rel='noopener'>View recipient on GIWA explorer ↗</a></span>");
+          } else {
+            setStep(3, "active", "confirmed — still relaying");
+            // L1 is final but arrival wasn't seen inside the watch window — don't claim 100%
+            txPctValue = 92;
+            $("txFill").style.width = "92%"; $("txPct").textContent = "92%";
+            $("txProgressTitle").textContent = "Confirmed on Sepolia — still relaying";
+            $("txDetail").innerHTML = "Your deposit is confirmed on L1 and will land on GIWA shortly. This page stopped watching after ~3 minutes — check the recipient on the <a href='" + L2.explorer + "/address/" + recipient + "' target='_blank' rel='noopener'>GIWA explorer</a> to confirm arrival.";
+            stopTxTimer();
+          }
+          refreshStats();
+        }).catch(function(e){
+          if(e && e.code === 4001){ showErr("You rejected the transaction in your wallet. Nothing was sent."); failTxProgress("Rejected in your wallet — nothing was sent. Click <strong>Deposit ETH to GIWA</strong> to try again."); }
+          else { showErr(e.message || String(e)); failTxProgress((e.message || String(e)) + (currentHash ? "<span class='subline'>Tx <a href='" + L1.explorer + "/tx/" + currentHash + "' target='_blank' rel='noopener'>" + currentHash + "</a></span>" : "")); }
+          setStep(1, "", "");
+        }).finally(function(){
+          state.busy = false; updateDepositBtn(); refreshStats();
+        });
+      }
+      function shortHash(h){ return h ? h.slice(0,10) + "…" + h.slice(-8) : "—"; }
+      function waitReceipt(url, hash, tries, onPoll){
+        return rpc(url, "eth_getTransactionReceipt", [hash]).then(function(r){
+          if(r) return r;
+          if(tries <= 0) return null;
+          if(onPoll) onPoll();
+          return new Promise(function(res){ setTimeout(res, 4000); }).then(function(){ return waitReceipt(url, hash, tries-1, onPoll); });
+        });
+      }
+      function pollArrival(recipient, startBal, amountWei, entry, onProgress){
+        // If recipient is a different address, track that address's balance from now.
+        var baselinePromise = (recipient.toLowerCase() === (state.account||"").toLowerCase() && startBal !== null)
+          ? Promise.resolve(startBal)
+          : getBalance(L2.rpc, recipient).catch(function(){ return null; });
+        return baselinePromise.then(function(base){
+          var attempts = 0;
+          function tick(){
+            attempts++;
+            if(onProgress) onProgress(attempts);
+            return getBalance(L2.rpc, recipient).then(function(b){
+              if(base !== null && b >= base + amountWei){
+                entry.status = "arrived"; renderLog(); return true;
+              }
+              if(base === null){ base = b; }
+              if(attempts >= 40) { entry.status = "confirmed"; renderLog(); return false; } // ~3.5 min: stop watching, L1 side is final
+              return new Promise(function(res){ setTimeout(res, 5000); }).then(tick);
+            }).catch(function(){
+              if(attempts >= 40) return false;
+              return new Promise(function(res){ setTimeout(res, 5000); }).then(tick);
+            });
+          }
+          return tick();
+        });
+      }
+
+      // ---- Session log ----
+      function renderLog(){
+        var ul = $("depositLog"); ul.innerHTML = "";
+        if(!deposits.length){ ul.innerHTML = "<li class='empty'>No deposits yet this session.</li>"; return; }
+        deposits.forEach(function(d){
+          var li = document.createElement("li");
+          var badge = d.status === "arrived" ? "<span class='badge ok'>On GIWA ✓</span>" :
+                      d.status === "confirmed" ? "<span class='badge ok'>Confirmed on L1</span>" :
+                      d.status === "failed" ? "<span class='badge fail'>Failed</span>" :
+                      "<span class='badge pending'>In flight</span>";
+          li.innerHTML = "<span class='amt'>" + fmtEth(d.amount, 6) + " ETH</span>" + badge +
+            "<div class='hash'>L1 <a href='" + L1.explorer + "/tx/" + d.hash + "' target='_blank' rel='noopener'>" + d.hash + "</a></div>" +
+            "<div class='small'>To " + shortAddr(d.recipient) + " on GIWA · <a href='" + L2.explorer + "/address/" + d.recipient + "' target='_blank' rel='noopener'>view recipient on GIWA explorer ↗</a></div>";
+          ul.appendChild(li);
+        });
+      }
+
+      // ---- Status checker ----
+      function checkHash(){
+        var h = $("checkHash").value.trim();
+        var out = $("checkResult");
+        if(!isHash(h)){ out.innerHTML = "<span style='color:var(--red)'>That doesn't look like a transaction hash (0x + 64 hex characters).</span>"; return; }
+        out.innerHTML = "<span class='spin'></span>Looking it up on Sepolia…";
+        Promise.all([
+          rpc(L1.rpc, "eth_getTransactionByHash", [h]).catch(function(){ return null; }),
+          rpc(L1.rpc, "eth_getTransactionReceipt", [h]).catch(function(){ return null; })
+        ]).then(function(res){
+          var tx = res[0], rc = res[1];
+          if(!tx){ out.innerHTML = "No transaction with that hash found on Ethereum Sepolia. If you just sent it, wait a few seconds and check again."; return; }
+          var toPortal = (tx.to || "").toLowerCase() === PORTAL.toLowerCase();
+          var val = tx.value ? fmtEth(BigInt(tx.value), 6) : "0";
+          var html = "<strong>" + (rc ? (rc.status === "0x1" ? "Confirmed ✓" : "Failed on-chain") : "Pending — not yet confirmed") + "</strong>" +
+            (rc ? " in block " + parseInt(rc.blockNumber,16).toLocaleString() : "") + "<br>" +
+            "Value: <span class='mono'>" + val + " ETH</span> · To: <span class='mono'>" + shortAddr(tx.to) + "</span>" +
+            (toPortal ? " (OptimismPortal — this is a GIWA deposit)" : " (not the GIWA OptimismPortal)") + "<br>" +
+            "<a href='" + L1.explorer + "/tx/" + h + "' target='_blank' rel='noopener'>View on Etherscan ↗</a>" +
+            (rc && rc.status === "0x1" && toPortal ? " · Deposits land on GIWA about 1–3 minutes after the L1 block." : "");
+          out.innerHTML = html;
+        }).catch(function(e){ out.innerHTML = "Lookup failed: " + (e.message || e); });
+      }
+
+      // ---- Wire up ----
+      $("connectBtn").addEventListener("click", connect);
+      $("depositBtn").addEventListener("click", doDeposit);
+      $("checkBtn").addEventListener("click", checkHash);
+      $("checkHash").addEventListener("keydown", function(e){ if(e.key === "Enter") checkHash(); });
+      $("refreshLink").addEventListener("click", function(e){ e.preventDefault(); refreshStats(); });
+      ["addGiwaBtn","addGiwaBtn2","addGiwaBtn3"].forEach(function(id){ var el = $(id); if(el) el.addEventListener("click", addGiwa); });
+      $("switchSepoliaBtn").addEventListener("click", function(){ switchChain(L1.chainHex).then(function(){ state.chainId = L1.chainId; updateWalletUI(); }).catch(function(e){ showErr("Could not switch network: " + (e.message || e)); }); });
+      document.querySelectorAll(".chip").forEach(function(chip){
+        chip.addEventListener("click", function(){
+          if(chip.dataset.amt){ $("amount").value = chip.dataset.amt; return; }
+          if(state.balL1 === null){ showWarn("Connect your wallet first so the percentage can use your real Sepolia balance."); return; }
+          var wei;
+          if(chip.dataset.pct === "max"){ wei = state.balL1 > GAS_RESERVE ? state.balL1 - GAS_RESERVE : 0n; }
+          else { wei = state.balL1 * BigInt(chip.dataset.pct) / 100n; }
+          $("amount").value = fmtEth(wei, 18);
+        });
+      });
+      document.querySelectorAll("[data-copy]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var txt = btn.getAttribute("data-copy");
+          if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(function(){ btn.textContent = "Copied ✓"; setTimeout(function(){ btn.textContent = "Copy"; }, 1600); }); }
+        });
+      });
+
+      // Auto-detect an already-connected wallet
+      if(hasWallet()){
+        window.ethereum.request({ method:"eth_accounts" }).then(function(accs){
+          if(accs && accs[0]){ state.account = accs[0];
+            window.ethereum.request({ method:"eth_chainId" }).then(function(hex){ state.chainId = parseInt(hex,16); updateWalletUI(); refreshStats(); });
+          }
+          updateWalletUI();
+        }).catch(function(){ updateWalletUI(); });
+      } else { updateWalletUI(); }
+
+      refreshStats();
+      setInterval(refreshStats, 20000);
+    })();
+    </script>
+  </body>
+</html>
